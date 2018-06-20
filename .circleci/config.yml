@@ -24,8 +24,7 @@ jobs:
       - run: yarn install        
       - run: yarn build
       - run: cd
-      - run: git clone git@github.com:alexadrien/alexadrien.github.io.git
+      - run: git clone git@github.com:alexadrien/alexadrien.github.io.git ~/
       - run: cd alexadrien.github.io/estimapoint/
-      - run: cp -r ../../repo/build/* .
-      - run: git add .
-      - run: git commit -m "build estimapoint"
+      - run: cp -r ~/repo/build/* ~/alexadrien.github.io/estimapoint/
+      - run: cd ~/alexadrien.github.io/estimapoint/ && git add . && git commit -m "build estimapoint"
