@@ -26,3 +26,12 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+html, body, #root {
+  height: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
