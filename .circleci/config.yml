@@ -25,4 +25,7 @@ jobs:
       - run: yarn build
       - run: git clone git@github.com:alexadrien/alexadrien.github.io.git ~/alexadrien.github.io
       - run: cp -r ~/repo/build/* ~/alexadrien.github.io/estimapoint/
+      - add_ssh_keys:
+          fingerprints:
+            - "fa:b8:a5:e1:26:5a:56:e5:a9:32:97:e4:e1:af:d3:42"
       - run: cd ~/alexadrien.github.io/estimapoint/ && git add . && git commit -m "build estimapoint"
