@@ -1,5 +1,31 @@
-deployment:
-  production:
-    branch: master
-    commands:
-    - ./scripts/deploy_gh_pages.sh
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version you desire here
+      - image: circleci/node:7.10
+      
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - v1-dependencies-
+
+      - run: yarn install        
+      - run: yarn build
+      - run: git clone git@github.com:alexadrien/alexadrien.github.io.git ~/alexadrien.github.io
+      - run: cp -r ~/repo/build/* ~/alexadrien.github.io/estimapoint/
+      - add_ssh_keys:
+          fingerprints:
+            - "fa:b8:a5:e1:26:5a:56:e5:a9:32:97:e4:e1:af:d3:42"
+      - run: cd ~/alexadrien.github.io/estimapoint/ && git add . && git commit -m "build estimapoint"
