@@ -10,3 +10,4 @@ jobs:
       - image: circleci/node:7.10
     steps:
       - checkout
+      - run:./scripts/deploy_gh_pages.sh
