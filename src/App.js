@@ -7,7 +7,7 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemText from "@material-ui/core/ListItemText";
 import Divider from "@material-ui/core/Divider";
 import find from 'lodash/find';
-import {Container, Button, AppBar, ErrorMessage, ButtonsContainer, PointButton, CalcResult} from "./App.style";
+import {Container, Button, AppBar, ButtonsContainer, PointButton, CalcResult} from "./App.style";
 
 const formatTicketTitle = (ticketTitle) => {
   var ticketRegex = /\((.*)\)(.*)/g;

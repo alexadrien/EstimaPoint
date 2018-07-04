@@ -35,12 +35,6 @@ export const AppBar = styled(MUIAppBar)`
   }
 `;
 
-export const ErrorMessage = styled(MUITypography)`
-  && {
-    margin: auto 20px;
-  }
-`;
-
 export const ButtonsContainer = styled.div`
   display: flex;
   flex-direction: column;
