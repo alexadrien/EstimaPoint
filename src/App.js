@@ -2,6 +2,11 @@ import React, {Component} from 'react';
 import './App.css';
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
+import Divider from "@material-ui/core/Divider";
+import find from 'lodash/find';
 import {Container, Button, AppBar, ErrorMessage, ButtonsContainer, PointButton, CalcResult} from "./App.style";
 
 const formatTicketTitle = (ticketTitle) => {
@@ -17,7 +22,7 @@ const formatTicketTitle = (ticketTitle) => {
 class App extends Component {
   state = {
     logged: false,
-    boardExist: false,
+    boards: [],
     boardId: null,
     cards: [],
   };
@@ -44,19 +49,16 @@ class App extends Component {
   checkBoard = async () => {
     const me = await window.Trello.members.get("me");
     const allBoards = await Promise.all(me.idBoards.map((boardId) => window.Trello.boards.get(boardId)));
-    const matchingBoard = allBoards.filter(({name}) => (name.indexOf("[EstimaPoint] AAA") > -1));
-    if (matchingBoard.length >= 0) {
-      this.setState({
-        boardExist: true,
-        boardId: matchingBoard[0].id
-      });
-      this.downloadCards();
-    }
+    this.setState({
+      boards: allBoards,
+    });
   };
 
   downloadCards = async () => {
-    const cards = await window.Trello.get(`boards/${this.state.boardId}/cards`);
-    this.setState({cards});
+    const lists = await window.Trello.get(`boards/${this.state.boardId}/lists`);
+    const estimapointList = find(lists, {name: 'EstimaPoint'});
+    const cards = await window.Trello.get(`lists/${estimapointList.id}/cards`);
+    this.setState({cards: cards});
   };
 
   toggleCardState = (cardId) => {
@@ -70,7 +72,7 @@ class App extends Component {
   };
 
   calculateResult = () => (this.state.cards.reduce((counter, currentCard) => {
-    if(currentCard.clicked){
+    if (currentCard.clicked) {
       const {points} = formatTicketTitle(currentCard.name);
       return (counter + points);
     } else {
@@ -87,17 +89,24 @@ class App extends Component {
               EstimaPoint
             </Typography>
           </Toolbar>
-          {this.state.logged && (
+          {!this.state.logged && (
             <Toolbar>
               <Typography variant="subheading" color="inherit">
-                Logged
+                Please login
               </Typography>
             </Toolbar>
           )}
-          {this.state.boardExist && this.state.logged && (
+          {this.state.logged && !this.state.boardId && this.state.boards.length > 0 && (
             <Toolbar>
-              <Typography variant="subtitle" color="inherit">
-                Board found
+              <Typography variant="subheading" color="inherit">
+                Please select a board
+              </Typography>
+            </Toolbar>
+          )}
+          {((this.state.logged && this.state.boards.length === 0) || (this.state.boardId && this.state.cards.length === 0)) && (
+            <Toolbar>
+              <Typography variant="subheading" color="inherit">
+                Please wait
               </Typography>
             </Toolbar>
           )}
@@ -107,28 +116,45 @@ class App extends Component {
             Connect to Trello
           </Button>
         )}
-        {!this.state.boardExist && this.state.logged && (
-          <ErrorMessage variant="title" color="inherit">
-            Please create a board with this name in your Trello Board :
-            <Typography variant="headline" align="center">[EstimaPoint] AAA</Typography>
-          </ErrorMessage>
+        {!this.state.boardId && this.state.logged && (
+          <List component="nav">
+            {this.state.boards.map((board) => (
+              <React.Fragment>
+                <ListItem button key={board.id}>
+                  <ListItemText primary={board.name} onClick={async () => {
+                    await this.setState({boardId: board.id});
+                    this.downloadCards()
+                  }}
+                  />
+                </ListItem>
+                <Divider/>
+              </React.Fragment>
+            ))
+            }
+          </List>
+
         )}
-        <ButtonsContainer>
-          <CalcResult>
-            <Typography variant="title">{this.calculateResult()}</Typography>
-          </CalcResult>
-          {this.state.cards.map(card => {
-            return (
-              <PointButton
-                variant="contained"
-                key={card.id}
-                onClick={() => this.toggleCardState(card.id)}
-                color={card.clicked ? "secondary" : "primary"}>
-                {card.name}
-              </PointButton>
-            )
-          })}
-        </ButtonsContainer>
+        {this.state.boardId && (
+          <ButtonsContainer>
+            {this.state.cards.length > 0 && (
+              <CalcResult>
+                <Typography variant="title">{this.calculateResult()}</Typography>
+              </CalcResult>
+            )}
+            {this.state.cards.map(card => {
+              return (
+                <PointButton
+                  variant="contained"
+                  key={card.id}
+                  onClick={() => this.toggleCardState(card.id)}
+                  color={card.clicked ? "secondary" : "primary"}>
+                  {card.name}
+                </PointButton>
+              )
+            })}
+          </ButtonsContainer>
+        )}
+
       </Container>
     );
   }
